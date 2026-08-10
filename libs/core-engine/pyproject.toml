@@ -1,0 +1,17 @@
+[build-system]
+requires = ["scikit-build-core>=0.9", "nanobind>=2.1"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "core_engine"
+version = "0.2.0"
+description = "C++26 zero-copy VWAP time-bucketing engine (nanobind extension)"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.scikit-build]
+wheel.expand-macos-universal-tags = true
+cmake.version = ">=3.24"
+cmake.args = ["-DCORE_ENGINE_BUILD_TESTS=OFF"]
+ninja.version = ">=1.11"
+build-dir = "build/{wheel_tag}"

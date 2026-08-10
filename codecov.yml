@@ -1,0 +1,18 @@
+coverage:
+  status:
+    project:
+      python:
+        flags: [python]
+        target: 100%
+      typescript:
+        flags: [typescript]
+        target: 100%
+flags:
+  python:
+    paths:
+      - apps/trading-strategy/src/
+  typescript:
+    paths:
+      - apps/dashboard/src/
+comment:
+  layout: "header, diff, flags, files"

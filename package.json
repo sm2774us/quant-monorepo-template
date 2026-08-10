@@ -1,0 +1,11 @@
+{
+  "name": "quant-project",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/dashboard"
+  ],
+  "devDependencies": {
+    "nx": "latest"
+  }
+}
