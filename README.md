@@ -9,7 +9,7 @@ tested to 100% coverage, and CI-verified on Windows 11, Ubuntu, and RHEL.
 
 ## Tech Stack
 
-This polyglot monorepo is engineered using a high-performance, zero-copy architecture leveraging the following modern language standards:
+This polyglot monorepo template is engineered using a high-performance, zero-copy architecture leveraging the following modern language standards:
 
 [![C++26](https://img.shields.io/badge/C%2B%2B-26-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)](https://en.cppreference.com/w/cpp/26)
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://docs.python.org/3.13/)
@@ -111,10 +111,29 @@ docker compose up --build
 # Dashboard: http://localhost:8080  (nginx proxies /api/* to the backend)
 ```
 
+## Using This Repo as a Template
+
+Starting a new project from this monorepo? See
+[`docs/TEMPLATE_USAGE_GUIDE.md`](docs/TEMPLATE_USAGE_GUIDE.md) for the
+buy-in rationale, bootstrap steps, and what to harden before production.
+
 ## CI/CD
 
 `.github/workflows/ci.yml` runs three parallel jobs — `cpp-tests` (Windows
 11 / Ubuntu / RHEL 9 via UBI9 container), `python-tests`, and
-`frontend-tests` — followed by an automated semantic-version tag + GitHub
-Release on merge to `main`. See `docs/SOLUTION_EXPLANATION.md` for full
-design rationale.
+`frontend-tests` — followed by a `release` job on merge to `main` that:
+
+1. Computes the next semantic version from the latest `vX.Y.Z` tag.
+2. Generates a categorized changelog from merged PRs since that tag.
+3. Prepends it to `CHANGELOG.md` and commits that change to `main`.
+4. Tags the resulting changelog commit (not a stale earlier one).
+5. Builds a `git archive` source tarball containing the updated
+   `CHANGELOG.md`, with a SHA-256 checksum.
+6. Publishes a GitHub Release with the changelog as its body and the
+   tarball + checksum as downloadable assets.
+
+Set the optional `RELEASE_PAT` repository secret (a token with `contents:
+write` and the ability to bypass/satisfy branch protection on `main`) if
+`main` is protected; otherwise the job falls back to the default
+`GITHUB_TOKEN`. See `docs/SOLUTION_EXPLANATION.md` for full design
+rationale.

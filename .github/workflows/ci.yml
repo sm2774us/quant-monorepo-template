@@ -46,7 +46,22 @@ jobs:
         if: matrix.name == 'windows11'
         run: choco install ninja -y
 
-      - name: Configure
+      - name: Configure (Ubuntu — force GCC 14 for C++26 support)
+        if: matrix.name == 'ubuntu-latest'
+        working-directory: libs/core-engine
+        env:
+          # GCC 13 (the ambient default `c++`/`g++` on ubuntu-latest) does
+          # not recognize `cxx_std_26`, which is what produced:
+          #   "The compiler feature 'cxx_std_26' is not known to CXX
+          #    compiler GNU 13.3.0". g++-14 is installed above but was
+          #   never selected, so CMake picked the ambient default. Force
+          #   it explicitly.
+          CC: gcc-14
+          CXX: g++-14
+        run: cmake -S . -B build -G Ninja -DCORE_ENGINE_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (Windows / RHEL9)
+        if: matrix.name != 'ubuntu-latest'
         working-directory: libs/core-engine
         run: cmake -S . -B build -G Ninja -DCORE_ENGINE_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
 
@@ -62,45 +77,93 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: windows-latest
+            name: windows11
+          - os: ubuntu-latest
+            name: ubuntu-latest
+          - os: ubuntu-latest
+            name: rhel9
+            container: redhat/ubi9:latest
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container || null }}
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install base tools (RHEL/UBI9 container)
+        if: matrix.name == 'rhel9'
+        run: |
+          set -euo pipefail
+          dnf install -y gcc-toolset-14-gcc-c++ cmake ninja-build git curl \
+            ca-certificates tar gzip
+          echo "/opt/rh/gcc-toolset-14/root/usr/bin" >> "$GITHUB_PATH"
+
       - name: Setup Python
+        # actions/setup-python's relocatable CPython builds run on any
+        # glibc-based Linux, including inside the UBI9 container, so no
+        # RHEL-specific branching is needed for this step.
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
       - name: Setup C++ toolchain (Ubuntu)
-        if: runner.os == 'Linux'
+        if: matrix.name == 'ubuntu-latest'
         run: |
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y cmake g++-14 ninja-build
 
       - name: Setup C++ toolchain (Windows)
-        if: runner.os == 'Windows'
+        if: matrix.name == 'windows11'
         run: choco install ninja -y
 
-      - name: Install uv (Linux/macOS)
-        if: runner.os != 'Windows'
+      - name: Install uv (Linux/RHEL)
+        if: matrix.name != 'windows11'
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
 
       - name: Install uv (Windows)
-        if: runner.os == 'Windows'
+        if: matrix.name == 'windows11'
         run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
-      - name: Build and test backend (compiles C++26 extension)
+      - name: Build and test backend (Ubuntu — force GCC 14)
+        if: matrix.name == 'ubuntu-latest'
         working-directory: apps/trading-strategy
+        env:
+          # Same root cause as the cpp-tests job: ubuntu-latest's ambient
+          # GCC 13 doesn't support cxx_std_26 and must be overridden to
+          # the GCC 14 installed above.
+          CC: gcc-14
+          CXX: g++-14
+        shell: bash
         run: |
+          set -euo pipefail
+          source "${HOME}/.local/bin/env" 2>/dev/null || true
+          uv venv
+          uv pip install -e ../../libs/core-engine
+          uv pip install -e .[dev]
+          uv run pytest
+
+      - name: Build and test backend (Windows / RHEL9)
+        if: matrix.name != 'ubuntu-latest'
+        working-directory: apps/trading-strategy
+        # windows-latest GitHub-hosted runners ship Git for Windows,
+        # which provides a `bash` shell GitHub Actions can select
+        # directly -- so this single step covers both Windows and the
+        # RHEL9/UBI9 container without per-OS duplication. RHEL9's
+        # gcc-toolset-14 bin dir is already prepended to PATH by the
+        # earlier install step; windows-latest resolves a sufficient
+        # compiler on its own.
+        shell: bash
+        run: |
+          set -euo pipefail
+          source "${HOME}/.local/bin/env" 2>/dev/null || true
           uv venv
           uv pip install -e ../../libs/core-engine
           uv pip install -e .[dev]
           uv run pytest
 
       - name: Upload coverage to Codecov
-        if: runner.os == 'Linux'
+        if: matrix.name == 'ubuntu-latest'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -112,17 +175,42 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: windows-latest
+            name: windows11
+          - os: ubuntu-latest
+            name: ubuntu-latest
+          - os: ubuntu-latest
+            name: rhel9
+            container: redhat/ubi9:latest
     runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container || null }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install base tools (RHEL/UBI9 container)
+        if: matrix.name == 'rhel9'
+        # actions/checkout falls back to the GitHub REST API when git is
+        # absent, but actions/setup-node's tarball extraction and npm
+        # itself still expect a minimally populated userland; UBI9's
+        # minimal image lacks tar/gzip by default in some tags.
+        run: dnf install -y tar gzip git
 
       - name: Setup Node & TypeScript
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "npm"
-          cache-dependency-path: apps/dashboard/package-lock.json
+          # node-version 20 is deprecated on GitHub-hosted runners as of
+          # late 2025 and prints a deprecation banner; 22 is current LTS.
+          node-version: 22
+          # `cache: npm` requires cache-dependency-path to resolve to an
+          # existing, committed lockfile via hashFiles(); this repo does
+          # not commit apps/dashboard/package-lock.json, so the glob
+          # matched nothing and setup-node hard-failed with "Some
+          # specified paths were not resolved, unable to cache
+          # dependencies." Caching is a build-speed optimization, not a
+          # correctness requirement -- omit it rather than committing a
+          # lockfile purely to satisfy the cache step in a template repo
+          # where consumers will regenerate their own dependency tree.
 
       - name: Install and test
         working-directory: apps/dashboard
@@ -132,7 +220,7 @@ jobs:
           npm run test
 
       - name: Upload coverage to Codecov
-        if: runner.os == 'Linux'
+        if: matrix.name == 'ubuntu-latest'
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

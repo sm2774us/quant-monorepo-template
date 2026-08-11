@@ -31,7 +31,7 @@ PHASE                    TIME        WHAT YOU'RE DOING                      SKIP
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 ### 🎯 WHY ADOPT THIS TEMPLATE
 - [B1 · The Buy-In — What You Get for Free](#b1--the-buy-in--what-you-get-for-free)
@@ -59,7 +59,7 @@ PHASE                    TIME        WHAT YOU'RE DOING                      SKIP
 
 - **[Quick-Reference Checklist](#quick-reference-checklist)**
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -193,7 +193,7 @@ Authentication/authorization                Every firm's SSO/entitlements model 
 
 **Say it out loud:** *"If a template tries to be everything, it becomes something nobody trusts enough to build on. This one's job is to make the unglamorous 20% — build system, test gating, release integrity — a solved problem, and to get out of the way for the 80% that's actually your firm's edge."*
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -226,7 +226,7 @@ cryptography or specific approved-package lists              (GCC 14, Python 3.1
                                                               before adopting wholesale
 ```
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -300,7 +300,7 @@ Windows uv install step fails               PowerShell execution policy        U
                                                                                in the runner image instead
 ```
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -325,7 +325,7 @@ Required reviewers                ≥ 1 for apps/, ≥ 1 for libs/ (use     Nati
                                                                         on memory-safety implications
 ```
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -348,7 +348,7 @@ TypeScript 7   npm run test                                      Before every co
 
 **Say it out loud:** *"None of these commands are optional pre-push rituals — they're literally what CI runs. If it's red locally, it will be red in the matrix, on all three operating systems, and the release job will never trigger."*
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -381,7 +381,7 @@ TypeScript 7   npm run test                                      Before every co
 
 **Say it out loud:** *"When you're deciding where a new piece of logic goes, ask: does it touch HTTP/CLI concerns only? api.py/cli.py. Does it orchestrate one or more native calls, or apply business rules? service.py. Is it pure, allocation-conscious numerical computation? The engine. Getting this placement right is what keeps 100% coverage achievable — each layer is trivially testable in isolation."*
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -413,7 +413,7 @@ STEP  ACTION
 
 **Say it out loud:** *"The engine's contract with Python is: you hand me validated, contiguous, correctly-typed memory, and I hand you back a result with zero hidden copies. Breaking that contract — accepting arbitrary Python objects, allocating inside the loop, doing I/O — is how a 'zero-copy C++ core' quietly becomes a liability."*
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -443,7 +443,7 @@ A new dependency                  apps/<svc>/pyproject.toml [project]           
                                                                                  pytest still passes
 ```
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -471,7 +471,7 @@ A new dependency                  apps/dashboard/package.json                   
                                                                                  package before adding
 ```
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -504,7 +504,7 @@ No mutation testing                              Consider mutmut (Python) / a C+
                                                   achieves line coverage
 ```
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -534,7 +534,7 @@ No rate limiting / backpressure                  API gateway-level rate limiting
                                                  core can drain it
 ```
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -569,7 +569,7 @@ checksum                                          (Sigstore/cosign) and record t
 
 **Say it out loud:** *"None of these gaps are oversights — they're seams left intentionally open because the correct answer is firm-specific. The template's job was to make sure you never have to ask 'wait, does our C++ engine even release the GIL correctly?' three months in. It was never going to be able to answer 'which secrets manager does our firm standardize on?' for you."*
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
 
 ---
 ---
@@ -589,4 +589,8 @@ checksum                                          (Sigstore/cosign) and record t
 □  Production topology (TLS, autoscaling, secrets manager) planned before go-live
 ```
 
-[🔝 Back to Top](#-table-of-contents)
+[🔝 Back to Top](#table-of-contents)
+
+
+---
+---
