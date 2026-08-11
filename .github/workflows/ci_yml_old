@@ -28,28 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify checkout contains the core-engine source tree
-        # This job has repeatedly failed downstream with "fatal error:
-        # core_engine/bucketing.h: No such file or directory" despite the
-        # compiler invocation's -I flag pointing at the correct directory
-        # -- reproduced identically across Windows/Ubuntu/RHEL9 and two
-        # independent CMake build paths. That pattern points at the file
-        # being absent from the checked-out tree itself, not a build-flag
-        # problem. Fail immediately, with an unambiguous message and a
-        # directory listing, rather than let a missing-file problem
-        # surface as a cryptic compiler error deep in the build log.
-        shell: bash
-        run: |
-          set -euo pipefail
-          HEADER="libs/core-engine/include/core_engine/bucketing.h"
-          echo "--- libs/core-engine tree as checked out ---"
-          find libs/core-engine -type f | sort || true
-          if [ ! -f "${HEADER}" ]; then
-            echo "::error::${HEADER} is missing from this checkout. This is a repository-content issue, not a CI configuration issue: verify the file is committed with 'git ls-files -- ${HEADER}' and pushed to the branch this workflow is running against." >&2
-            exit 1
-          fi
-          echo "OK: ${HEADER} present ($(wc -l < "${HEADER}") lines)."
-
       - name: Install build tools (RHEL/UBI9)
         if: matrix.name == 'rhel9'
         run: |
@@ -112,31 +90,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify checkout contains the core-engine source tree
-        shell: bash
-        run: |
-          set -euo pipefail
-          HEADER="libs/core-engine/include/core_engine/bucketing.h"
-          echo "--- libs/core-engine tree as checked out ---"
-          find libs/core-engine -type f | sort || true
-          if [ ! -f "${HEADER}" ]; then
-            echo "::error::${HEADER} is missing from this checkout. This is a repository-content issue, not a CI configuration issue: verify the file is committed with 'git ls-files -- ${HEADER}' and pushed to the branch this workflow is running against." >&2
-            exit 1
-          fi
-          echo "OK: ${HEADER} present ($(wc -l < "${HEADER}") lines)."
-
       - name: Install base tools (RHEL/UBI9 container)
         if: matrix.name == 'rhel9'
         run: |
           set -euo pipefail
-          # UBI9 ships curl-minimal, which owns the same binary path as
-          # the full `curl` package; installing `curl` alongside it
-          # without --allowerasing fails with a package conflict (this
-          # is what produced: "package curl-minimal ... conflicts with
-          # curl ..."). curl-minimal already supports the -LsSf flags
-          # our uv installer needs, so drop the explicit `curl` package
-          # entirely rather than fighting the conflict.
-          dnf install -y gcc-toolset-14-gcc-c++ cmake ninja-build git
+          dnf install -y gcc-toolset-14-gcc-c++ cmake ninja-build git curl \
+            ca-certificates tar gzip
           echo "/opt/rh/gcc-toolset-14/root/usr/bin" >> "$GITHUB_PATH"
 
       - name: Setup Python
