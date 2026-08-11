@@ -400,21 +400,44 @@ jobs:
           git tag -a "${NEW_TAG}" "${RELEASE_SHA}" -m "Release ${NEW_TAG}"
           git push origin "refs/tags/${NEW_TAG}"
 
+      # - name: Build source distribution tarball (includes CHANGELOG.md)
+      #   id: tarball
+      #   env:
+      #     NEW_TAG: ${{ steps.next_version.outputs.tag }}
+      #   run: |
+      #     set -euo pipefail
+      #     OUT="QUANT_PROJECT-${NEW_TAG}.tar.gz"
+      #     git archive --format=tar --prefix="QUANT_PROJECT-${NEW_TAG}/" HEAD \
+      #       | gzip -9 > "${OUT}"
+
+      #     # Fail closed if the archive doesn't actually contain the
+      #     # just-committed changelog -- catches the exact class of bug
+      #     # in the original workflow, where the tag/release predated the
+      #     # commit it was supposed to include.
+      #     if ! tar -tzf "${OUT}" | grep -q "CHANGELOG.md$"; then
+      #       echo "::error::CHANGELOG.md missing from release tarball ${OUT}." >&2
+      #       exit 1
+      #     fi
+
+      #     sha256sum "${OUT}" > "${OUT}.sha256"
+      #     echo "path=${OUT}" >> "$GITHUB_OUTPUT"
+      #     echo "checksum_path=${OUT}.sha256" >> "$GITHUB_OUTPUT"
+
       - name: Build source distribution tarball (includes CHANGELOG.md)
         id: tarball
         env:
           NEW_TAG: ${{ steps.next_version.outputs.tag }}
+          RELEASE_SHA: ${{ steps.commit_changelog.outputs.sha }}
         run: |
           set -euo pipefail
           OUT="QUANT_PROJECT-${NEW_TAG}.tar.gz"
-          git archive --format=tar --prefix="QUANT_PROJECT-${NEW_TAG}/" HEAD \
+          git archive --format=tar --prefix="QUANT_PROJECT-${NEW_TAG}/" "${RELEASE_SHA:-HEAD}" \
             | gzip -9 > "${OUT}"
 
-          # Fail closed if the archive doesn't actually contain the
-          # just-committed changelog -- catches the exact class of bug
-          # in the original workflow, where the tag/release predated the
-          # commit it was supposed to include.
-          if ! tar -tzf "${OUT}" | grep -q "CHANGELOG.md$"; then
+          # Fail closed if the archive doesn't actually contain the just-committed changelog.
+          # Note: use `grep ... >/dev/null` instead of `grep -q` to prevent tar from throwing
+          # `tar: stdout: write error` (SIGPIPE) under `set -o pipefail` when grep exits early.
+          if ! tar -tzf "${OUT}" | grep "CHANGELOG.md$" >/dev/null; then
             echo "::error::CHANGELOG.md missing from release tarball ${OUT}." >&2
             exit 1
           fi
