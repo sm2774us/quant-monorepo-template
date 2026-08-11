@@ -181,7 +181,7 @@ jobs:
           set -euo pipefail
           source "${HOME}/.local/bin/env" 2>/dev/null || true
           uv venv
-          uv pip install -e ../../libs/core-engine
+          uv pip install ../../libs/core-engine
           uv pip install -e .[dev]
           uv run pytest
 
@@ -200,7 +200,7 @@ jobs:
           set -euo pipefail
           source "${HOME}/.local/bin/env" 2>/dev/null || true
           uv venv
-          uv pip install -e ../../libs/core-engine
+          uv pip install ../../libs/core-engine
           uv pip install -e .[dev]
           uv run pytest
 
