@@ -1,3 +1,13 @@
+# Release v0.1.2
+
+_Released: 2026-08-11T20:54:08Z_
+
+## 🚀 Features
+
+- bumping version to 0.1.2 (#1) @sm2774us
+
+
+
 # Release v0.1.1
 
 _Released: 2026-08-11T20:16:45Z_
