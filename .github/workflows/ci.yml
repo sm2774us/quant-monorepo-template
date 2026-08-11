@@ -107,6 +107,7 @@ jobs:
           - os: ubuntu-latest
             name: rhel9
             container: redhat/ubi9:latest
+    needs: cpp-tests
     runs-on: ${{ matrix.os }}
     container: ${{ matrix.container || null }}
     steps:

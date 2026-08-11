@@ -23,18 +23,46 @@ project(core_engine LANGUAGES CXX)
 
 option(CORE_ENGINE_BUILD_TESTS "Build GoogleTest unit tests" OFF)
 
-add_compile_options(-Wall -Wextra -Werror -Wpedantic)
+#add_compile_options(-Wall -Wextra -Werror -Wpedantic)
+#if(NOT CMAKE_BUILD_TYPE)
+#  set(CMAKE_BUILD_TYPE Release)
+#endif()
+#if(CMAKE_BUILD_TYPE STREQUAL "Release")
+#  add_compile_options(-O3 -DNDEBUG)
+#endif()
+#
+#add_library(core_engine_headers INTERFACE)
+#target_include_directories(core_engine_headers INTERFACE
+#  ${CMAKE_CURRENT_SOURCE_DIR}/include)
+#target_compile_options(core_engine_headers INTERFACE -std=c++26)
+
+if(MSVC)
+  add_compile_options(/W4 /WX)
+else()
+  add_compile_options(-Wall -Wextra -Werror -Wpedantic)
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
+
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
-  add_compile_options(-O3 -DNDEBUG)
+  if(MSVC)
+    add_compile_options(/O2 -DNDEBUG)
+  else()
+    add_compile_options(-O3 -DNDEBUG)
+  endif()
 endif()
 
 add_library(core_engine_headers INTERFACE)
 target_include_directories(core_engine_headers INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_options(core_engine_headers INTERFACE -std=c++26)
+
+if(MSVC)
+  target_compile_options(core_engine_headers INTERFACE /std:c++latest)
+else()
+  target_compile_options(core_engine_headers INTERFACE -std=c++26)
+endif()
 
 if(CORE_ENGINE_BUILD_TESTS)
   # Native GoogleTest build path (no Python needed): used by CI's
