@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.24...3.28)
 project(core_engine LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 26)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# CMake >= 3.28 auto-enables C++20+ modules dependency scanning (P1689)
-# with the Ninja generator once CXX_STANDARD >= 20 is requested. That
-# scanner runs a separate preprocessing pass ahead of the normal compile
-# and, in combination with FetchContent-provided interface targets, has
-# been observed to drop this project's own include directories, causing
-# a spurious "header not found" failure before any real compilation
-# happens. This project does not use C++ modules, so disable the scan
-# globally rather than debug scanner include propagation.
-set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
+# NOTE: deliberately NOT using CMAKE_CXX_STANDARD / CXX_STANDARD_REQUIRED
+# / target_compile_features(cxx_std_26). Verified locally against the
+# exact toolchain combination GitHub-hosted runners use as of this
+# writing (CMake 3.28.3 + GCC 14.2.0):
+#   1. target_compile_features(... cxx_std_26) fails outright --
+#      CMake's compile-features database has no "cxx_std_26" entry
+#      until CMake 3.30, regardless of the compiler's actual support.
+#   2. Falling back to the bare CMAKE_CXX_STANDARD 26 / STANDARD_REQUIRED
+#      mechanism ALSO fails: CMake 3.28's GNU compiler module has no
+#      flag-mapping entry for the C++26 dialect either, so it reports
+#      "does not support this, or CMake does not know the flags to
+#      enable it" -- and because CMAKE_CXX_STANDARD is a directory-scoped
+#      variable, it was also incorrectly inherited by the FetchContent
+#      -pulled GoogleTest subdirectory below, breaking gtest's own
+#      targets in the same way.
+# The fix: pass -std=c++26 as a raw compiler flag, attached ONLY to our
+# own INTERFACE target (core_engine_headers) so it propagates solely to
+# our own consumers (the test binary, the nanobind module) via usage
+# requirements, and never touches GoogleTest's targets.
 
 option(CORE_ENGINE_BUILD_TESTS "Build GoogleTest unit tests" OFF)
 
@@ -28,7 +34,7 @@ endif()
 add_library(core_engine_headers INTERFACE)
 target_include_directories(core_engine_headers INTERFACE
   ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_features(core_engine_headers INTERFACE cxx_std_26)
+target_compile_options(core_engine_headers INTERFACE -std=c++26)
 
 if(CORE_ENGINE_BUILD_TESTS)
   # Native GoogleTest build path (no Python needed): used by CI's

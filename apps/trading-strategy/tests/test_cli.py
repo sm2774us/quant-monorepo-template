@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import json
+from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from trading_strategy.cli import app
+from trading_strategy.cli import app, main
 
 runner = CliRunner()
 
@@ -72,3 +73,30 @@ def test_help_lists_commands() -> None:
     assert result.exit_code == 0
     assert "serve" in result.stdout
     assert "analyze-file" in result.stdout
+
+
+def test_serve_invokes_uvicorn_with_expected_arguments() -> None:
+    with patch("trading_strategy.cli.uvicorn.run") as mock_run:
+        result = runner.invoke(
+            app,
+            ["serve", "--host", "127.0.0.1", "--port", "9000"],
+        )
+    assert result.exit_code == 0
+    mock_run.assert_called_once_with(
+        "trading_strategy.api:app", host="127.0.0.1", port=9000, reload=False
+    )
+
+
+def test_serve_defaults() -> None:
+    with patch("trading_strategy.cli.uvicorn.run") as mock_run:
+        result = runner.invoke(app, ["serve"])
+    assert result.exit_code == 0
+    mock_run.assert_called_once_with(
+        "trading_strategy.api:app", host="0.0.0.0", port=8000, reload=False
+    )
+
+
+def test_main_delegates_to_typer_app() -> None:
+    with patch("trading_strategy.cli.app") as mock_app:
+        main()
+    mock_app.assert_called_once_with()

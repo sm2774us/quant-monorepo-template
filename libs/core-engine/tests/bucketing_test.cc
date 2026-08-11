@@ -61,22 +61,29 @@ TEST(CalculateTimeBuckets, MismatchedLengthsThrow) {
   const std::vector<double> ts{1.0, 2.0};
   const std::vector<double> px{1.0};
   const std::vector<double> sz{1.0, 1.0};
-  EXPECT_THROW(CalculateTimeBuckets(ts, px, sz, 1.0), std::invalid_argument);
+  // CalculateTimeBuckets is [[nodiscard]]; under -Werror=unused-result
+  // (GCC 14+), EXPECT_THROW's expanded statement discarding that return
+  // value fails the build unless explicitly voided.
+  EXPECT_THROW((void)CalculateTimeBuckets(ts, px, sz, 1.0),
+               std::invalid_argument);
 }
 
 TEST(CalculateTimeBuckets, NonPositiveWindowThrows) {
   const std::vector<double> ts{1.0};
   const std::vector<double> px{1.0};
   const std::vector<double> sz{1.0};
-  EXPECT_THROW(CalculateTimeBuckets(ts, px, sz, 0.0), std::invalid_argument);
-  EXPECT_THROW(CalculateTimeBuckets(ts, px, sz, -1.0), std::invalid_argument);
+  EXPECT_THROW((void)CalculateTimeBuckets(ts, px, sz, 0.0),
+               std::invalid_argument);
+  EXPECT_THROW((void)CalculateTimeBuckets(ts, px, sz, -1.0),
+               std::invalid_argument);
 }
 
 TEST(CalculateTimeBuckets, UnsortedTimestampsThrow) {
   const std::vector<double> ts{2.0, 1.0};
   const std::vector<double> px{1.0, 1.0};
   const std::vector<double> sz{1.0, 1.0};
-  EXPECT_THROW(CalculateTimeBuckets(ts, px, sz, 1.0), std::invalid_argument);
+  EXPECT_THROW((void)CalculateTimeBuckets(ts, px, sz, 1.0),
+               std::invalid_argument);
 }
 
 }  // namespace

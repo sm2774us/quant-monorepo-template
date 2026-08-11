@@ -38,7 +38,7 @@ describe("App", () => {
     await waitFor(() =>
       expect(screen.getByText(/bucket count:/i)).toBeDefined(),
     );
-    expect(screen.getByText(/2/)).toBeDefined();
+    expect(screen.getByTestId("bucket-count").textContent).toBe("2");
   });
 
   it("displays an error message when the request fails", async () => {
@@ -55,5 +55,40 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: /execute 5-trade/i }));
 
     await waitFor(() => expect(screen.getByRole("alert")).toBeDefined());
+  });
+
+  it("falls back to a generic message for a non-AnalysisRequestError failure", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
+    );
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /execute 5-trade/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText(/unexpected error running analysis/i)).toBeDefined(),
+    );
+  });
+
+  it("defaults a missing per-bucket trade count to zero", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          bucket_count: 2,
+          vwap_curve: [100.15, 100.35],
+          // Deliberately shorter than vwap_curve to exercise the `?? 0`
+          // fallback required by noUncheckedIndexedAccess.
+          trade_counts: [3],
+        }),
+      }),
+    );
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: /execute 5-trade/i }));
+
+    await waitFor(() => expect(screen.getByText(/\(0 trades\)/)).toBeDefined());
   });
 });

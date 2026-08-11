@@ -55,6 +55,16 @@ def test_analyze_mismatched_lengths_returns_422() -> None:
     assert response.status_code == 422
 
 
+def test_analyze_mismatched_prices_length_returns_422() -> None:
+    payload = {
+        "timestamps": [1.0, 2.0],
+        "prices": [1.0],
+        "window_sec": 1.0,
+    }
+    response = client.post("/api/v1/analyze", json=payload)
+    assert response.status_code == 422
+
+
 def test_analyze_empty_input_returns_zero_buckets() -> None:
     payload = {"timestamps": [], "prices": [], "window_sec": 1.0}
     response = client.post("/api/v1/analyze", json=payload)

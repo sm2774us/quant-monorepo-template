@@ -82,5 +82,9 @@ def main() -> None:
     app()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
+    # Only executed when this module is run directly as a script (e.g.
+    # `python -m trading_strategy.cli`); the packaged console-script entry
+    # point calls main() directly and never triggers this guard, so it is
+    # structurally unreachable from the test suite.
     main()

@@ -49,7 +49,8 @@ export function App(): React.JSX.Element {
         >
           <h2>Results (Zero-Copy C++26 Engine)</h2>
           <p>
-            <strong>Bucket Count:</strong> {result.bucketCount}
+            <strong>Bucket Count:</strong>{" "}
+            <span data-testid="bucket-count">{result.bucketCount}</span>
           </p>
           <ul>
             {result.vwapCurve.map((vwap, idx) => (

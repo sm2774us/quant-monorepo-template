@@ -15,13 +15,22 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
+      // Use an explicit include allowlist rather than relying solely on
+      // excludes: an exclude-only list previously failed to keep the
+      // production `dist/` bundle (built by `npm run build`, which CI
+      // runs before `npm run test`) out of the coverage scan, dragging
+      // aggregate coverage down to ~69% by treating built, minified
+      // output as uncovered "source". Restricting to src/**.{ts,tsx} is
+      // immune to that class of bug regardless of what else exists on
+      // disk at test time.
+      include: ["src/**/*.ts", "src/**/*.tsx"],
+      exclude: ["src/main.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"],
       thresholds: {
         lines: 100,
         functions: 100,
         branches: 100,
         statements: 100,
       },
-      exclude: ["src/main.tsx", "**/*.config.ts", "**/*.test.tsx", "**/*.test.ts"],
     },
   },
 });
