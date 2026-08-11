@@ -1,3 +1,9 @@
+# Release v0.1.0
+
+_Released: 2026-08-11T20:05:32Z_
+
+- no changes
+
 # Changelog
 
 All notable changes to this project are documented in this file.
