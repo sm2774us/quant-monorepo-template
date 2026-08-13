@@ -11,7 +11,7 @@ app = FastAPI(
     title="Systematic TCA API",
     description="Zero-copy C++26 / Python 3.13 transaction-cost-analysis "
     "service for VWAP time-bucketing.",
-    version="0.1.2",
+    version="0.1.3",
 )
 
 
