@@ -1,3 +1,13 @@
+# Release v0.1.3
+
+_Released: 2026-08-13T12:39:32Z_
+
+## 🚀 Features
+
+- feat: improving source code documentation (#2) @sm2774us
+
+
+
 # Release v0.1.2
 
 _Released: 2026-08-11T20:54:08Z_
