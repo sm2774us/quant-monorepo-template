@@ -55,6 +55,18 @@ struct BucketResult {
   }
 
   const size_t num_trades = timestamps.size();
+  // The dot (.) syntax defines a designated initializer, which lets you explicitly name the member variables 
+  // of an aggregate structure or class () during initialization rather than relying 
+  // strictly on their positional order. It was added in C++20 
+  // and remains fully supported in C++26.
+  //
+  // Why Use Designated Initializers ?
+  //
+  // • Self-documenting code: You instantly see which value goes to which variable name 
+  //   without looking back at the struct definition. 
+  // • Safety: It prevents mixing up parameters that share the same data type. 
+  // • Maintainability: If the  struct changes or gains new fields later, 
+  //   your initialization remains clear and less prone to positional bugs.
   if (num_trades == 0) {
     return BucketResult{.bucket_count = 0, .vwap_curve = {}, .trade_counts = {}};
   }
@@ -87,9 +99,22 @@ struct BucketResult {
                                     : 0.0);
   }
 
+
+  // The dot (.) syntax defines a designated initializer, which lets you explicitly name the member variables 
+  // of an aggregate structure or class () during initialization rather than relying 
+  // strictly on their positional order. It was added in C++20 
+  // and remains fully supported in C++26.
+  //
+  // Why Use Designated Initializers ?
+  //
+  // • Self-documenting code: You instantly see which value goes to which variable name 
+  //   without looking back at the struct definition. 
+  // • Safety: It prevents mixing up parameters that share the same data type. 
+  // • Maintainability: If the  struct changes or gains new fields later, 
+  //   your initialization remains clear and less prone to positional bugs.
   return BucketResult{.bucket_count = bucket_count,
-                       .vwap_curve = std::move(vwap_curve),
-                       .trade_counts = std::move(counts)};
+                      .vwap_curve = std::move(vwap_curve),
+                      .trade_counts = std::move(counts)};
 }
 
 }  // namespace core_engine
